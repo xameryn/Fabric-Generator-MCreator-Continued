@@ -14,5 +14,6 @@ All global triggers are marked as supported, but they are not. Here is the full 
 - Player right clicks on entity
 - Player right clicks with item
 - Player wakes up
+- On player tick
 - On world tick
 - No additional trigger
