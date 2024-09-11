@@ -1,0 +1,1 @@
+FabricLoader.getInstance().isModLoaded("${input$modid}")

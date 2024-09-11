@@ -1,4 +1,6 @@
 <#include "procedures.java.ftl">
+private static boolean cancelEvent = false;
+
 public ${name}Procedure() {
 	AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) -> {
 		if (hand != player.getUsedItemHand())
@@ -16,6 +18,6 @@ public ${name}Procedure() {
 		</#compress></#assign>
 		execute(${dependenciesCode});
 		
-		return InteractionResult.PASS;
+		return cancelEvent ? InteractionResult.SUCCESS : InteractionResult.PASS;	
 	});
 }
