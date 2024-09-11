@@ -24,3 +24,27 @@ Licensed under the GNU Lesser General Public License, version 3.0
 - Forked versions of this software must be distributed under the same license as this with attribution if distributed.
 - Changes must be stated if any modified works are to be distributed.
 - Under no circumstances can you state that modified works are endorsed by the original creator.
+
+## Supported Global Triggers:
+
+- No additional trigger
+- A block is broken
+- Player sent chat
+- Entity attacked
+- Entity dies
+- Before entity is hurt
+- Entity travels to a dimension
+- Player goes to bed
+- Player left clicks on block
+- Player joins the world
+- Player leaves the world
+- Player respawns
+- Player right clicks block
+- Player right clicks on entity
+- Player right clicks with item
+- Player wakes up
+- On world tick
+- On player tick
+- Player finishes using item
+- A block is placed
+- On world load
