@@ -1,4 +1,5 @@
 <#assign mixins = []>
+<#assign mixins += ["BlockEntityMixin"]>
 <#if w.hasElementsOfBaseType("item")>
   <#assign mixins += ["${JavaModName}RepairItemRecipeMixin"]>
 </#if>

@@ -52,6 +52,10 @@ base_templates:
 - template: modbase/client.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/ClientInit.java"
   canLock: true
+- template: modbase/icustomdataholder.java.ftl
+  name: "@SRCROOT/@BASEPACKAGEPATH/util/ICustomDataHolder.java"
+- template: modbase/blocktaghelper.java.ftl
+  name: "@SRCROOT/@BASEPACKAGEPATH/util/BlockTagHelper.java"
 - template: modbase/variableslist.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/network/@JavaModNameVariables.java"
   condition: hasVariables()
@@ -81,9 +85,8 @@ base_templates:
 - template: modbase/mixins.json.ftl
   writer: file
   name: "@RESROOT/@modid.mixins.json"
-  condition_any:
-    - ${w.hasElementsOfBaseType("item")}
-    - ${w.hasElementsOfType("biome")}
+- template: mixins/blockentitymixin.java.ftl
+  name: "@SRCROOT/@BASEPACKAGEPATH/mixins/BlockEntityMixin.java"
 
 sources_setup_tasks:
   - task: copy_models
