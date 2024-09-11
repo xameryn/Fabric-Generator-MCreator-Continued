@@ -25,8 +25,7 @@ Licensed under the GNU Lesser General Public License, version 3.0
 - Changes must be stated if any modified works are to be distributed.
 - Under no circumstances can you state that modified works are endorsed by the original creator.
 
-## Supported Global Triggers:
-
+## Supported Global Triggers
 - No additional trigger
 - A block is broken
 - Player sent chat
