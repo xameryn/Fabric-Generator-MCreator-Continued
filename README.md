@@ -4,6 +4,8 @@ Yet another fork of Goldorion's MCreator Fabric generator, hoping to get closer 
 
 A plugin for [MCreator](https://mcreator.net/), a code generator to create Minecraft mods. Adds a [Fabric](https://fabricmc.net/) generator type.
 
+To compile plugin, just run build.bat, which will automatically build, install, and launch MCreator with the plugin.
+
 ## Important Information
 - Make sure you use MCreator 2023.4
 - Back up your workspace before updating to a newer version of the plugin.
