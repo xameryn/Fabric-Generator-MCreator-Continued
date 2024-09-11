@@ -43,13 +43,12 @@ public class BlockTagHelper {
             customDataHolder.setCustomData(customData);
             blockEntity.setChanged();
             
-            // Update the block state to trigger a re-render
             BlockState state = world.getBlockState(pos);
             world.setBlock(pos, state, 3);
-
-            // If it's a server world, send an update packet
             if (world instanceof ServerLevel) {
-                ((ServerLevel) world).getChunkSource().blockChanged(pos);
+                ServerLevel serverWorld = (ServerLevel) world;
+                serverWorld.getChunkSource().blockChanged(pos);
+                serverWorld.getChunkSource().getChunk(pos.getX() >> 4, pos.getZ() >> 4, true).setUnsaved(true);
             }
         }
     }

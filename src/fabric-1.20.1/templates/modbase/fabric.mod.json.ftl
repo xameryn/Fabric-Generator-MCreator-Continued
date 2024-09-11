@@ -37,9 +37,9 @@
 	"fabric": "*",
 	"minecraft": "~1.20",
 	"java": ">=17"
-  }<#if w.hasElementsOfBaseType("item") || w.hasElementsOfType("biome")>,
+  },
   "mixins": [
-	"${settings.getModID()}.mixins.json"
-  ]</#if>
+	  "${settings.getModID()}.mixins.json"
+  ]
 }
 <#-- @formatter:on -->
