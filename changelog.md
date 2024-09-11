@@ -1,5 +1,13 @@
 # Changelogs:
 
+## 1.20 [WIP]
+* Added player_persistant data types for String, boolean, and doubles (synced with server)
+* Added more forge triggers
+* Added more forge procedures
+* Added builder batch file
+* Added block NBT support (synced with server)
+* Made certain (eventually all) triggers cancellable
+
 ## 1.10
 (Thank you NerdyPuzzle)
 * [#520] Removed support for TerraBlender API (biome generation is now done similarly to Forge generators)
