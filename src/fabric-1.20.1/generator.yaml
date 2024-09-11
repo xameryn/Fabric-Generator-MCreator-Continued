@@ -55,6 +55,9 @@ base_templates:
 - template: modbase/variableslist.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/network/@JavaModNameVariables.java"
   condition: hasVariables()
+- template: modbase/packethandler.java.ftl
+  name: "@SRCROOT/@BASEPACKAGEPATH/network/@JavaModNamePacketHandler.java"
+  condition: hasVariables()
 - template: elementinits/javamodels.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/init/@JavaModNameModels.java"
   condition: hasJavaModels()

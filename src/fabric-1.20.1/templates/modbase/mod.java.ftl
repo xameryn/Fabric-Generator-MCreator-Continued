@@ -1,21 +1,3 @@
-<#--
- # This file is part of Fabric-Generator-MCreator.
- # Copyright (C) 2020-2023, Goldorion, opensource contributors
- #
- # Fabric-Generator-MCreator is free software: you can redistribute it and/or modify
- # it under the terms of the GNU Lesser General Public License as published by
- # the Free Software Foundation, either version 3 of the License, or
- # (at your option) any later version.
-
- # Fabric-Generator-MCreator is distributed in the hope that it will be useful,
- # but WITHOUT ANY WARRANTY; without even the implied warranty of
- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- # GNU Lesser General Public License for more details.
- #
- # You should have received a copy of the GNU Lesser General Public License
- # along with Fabric-Generator-MCreator.  If not, see <https://www.gnu.org/licenses/>.
--->
-
 <#-- @formatter:off -->
 /*
  *	MCreator note:
@@ -69,12 +51,16 @@ public class ${JavaModName} implements ModInitializer {
 		<#if w.hasVariablesOfScope("GLOBAL_WORLD") || w.hasVariablesOfScope("GLOBAL_MAP")>${JavaModName}Variables.SyncJoin();</#if>
 		<#if w.hasVariablesOfScope("GLOBAL_WORLD") || w.hasVariablesOfScope("GLOBAL_MAP")>${JavaModName}Variables.SyncChangeWorld();</#if>
 
+		${JavaModName}Variables.init();
+		${JavaModName}PacketHandler.registerC2SPackets();
+		${JavaModName}PacketHandler.registerS2CPackets();
+
 		<#if w.hasElementsOfType("biome")>
 			${JavaModName}Biomes.loadEndBiomes();
 			ServerLifecycleEvents.SERVER_STARTING.register((server) -> {
 				${JavaModName}Biomes.load(server);
 			});
-		</#if>
+		</#if>		
 	}
 }
 <#-- @formatter:on -->
