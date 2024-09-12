@@ -18,6 +18,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import ${package}.init.*;
 
+<#if (w.getFileFromWorkspace("src/main/java/" + package?replace(".", "/") + "/init/" + JavaModName + "ModConfigs.java"))?exists>
+	import ${package}.init.${JavaModName}ModConfigs;
+</#if>
+
 public class ${JavaModName} implements ModInitializer {
 
 	public static final Logger LOGGER = LogManager.getLogger();
@@ -55,12 +59,18 @@ public class ${JavaModName} implements ModInitializer {
 		${JavaModName}PacketHandler.registerC2SPackets();
 		${JavaModName}PacketHandler.registerS2CPackets();
 
+		<#if (w.getFileFromWorkspace("src/main/java/" + package?replace(".", "/") + "/init/" + JavaModName + "ModConfigs.java"))?exists>
+			${JavaModName}ModConfigs.register();
+		</#if>
+
 		<#if w.hasElementsOfType("biome")>
 			${JavaModName}Biomes.loadEndBiomes();
 			ServerLifecycleEvents.SERVER_STARTING.register((server) -> {
 				${JavaModName}Biomes.load(server);
 			});
-		</#if>		
+		</#if>
+
+		
 	}
 }
 <#-- @formatter:on -->
