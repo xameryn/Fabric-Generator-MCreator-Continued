@@ -1,13 +1,12 @@
 <#include "procedures.java.ftl">
-public class ${name}Procedure {
-    public ${name}Procedure() {
-        ServerWorldEvents.LOAD.register((MinecraftServer server, ServerWorld world) -> {
-            <#assign dependenciesCode><#compress>
-            <@procedureDependenciesCode dependencies, {
-                "world": "world"
-            }/>
-            </#compress></#assign>
-            execute(${dependenciesCode});
-        });
-    }
+public ${name}Procedure() {
+    ServerWorldEvents.LOAD.register((server, level) -> {
+        <#assign dependenciesCode><#compress>
+        <@procedureDependenciesCode dependencies, {
+            "world": "level",
+            "server": "server"
+        }/>
+        </#compress></#assign>
+        execute(${dependenciesCode});
+    });
 }
