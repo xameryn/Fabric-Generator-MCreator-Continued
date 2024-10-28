@@ -34,5 +34,6 @@ scopes:
         String _setval = ${opt.removeParentheses(value)};
         ${JavaModName}Variables.PlayerVariables _vars = ${JavaModName}Variables.getPlayerVariables(${entity});
         _vars.${name} = _setval;
+        _vars.syncPlayerVariables(${entity});
         ${JavaModName}Variables.savePlayerVariables(${entity});
       }
