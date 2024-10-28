@@ -1,0 +1,9 @@
+# Basic types
+string: String
+number: double
+logic: boolean
+direction: Direction
+blockstate: BlockState
+itemstack: ItemStack
+arraylist: ArrayList
+

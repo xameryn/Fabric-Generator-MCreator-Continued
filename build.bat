@@ -22,7 +22,7 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo Step 3: Attempting to run MCreator...
-call gradlew.bat runMCreator
+"C:\Program Files\Pylo\MCreator\mcreator.exe"
 if %ERRORLEVEL% neq 0 (
     echo Error running MCreator. Please check your MCreator installation path.
     pause

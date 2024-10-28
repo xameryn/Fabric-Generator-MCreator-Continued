@@ -4,22 +4,31 @@ package ${package}.network;
 import ${package}.${JavaModName};
 
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.Level;
+import net.minecraft.nbt.ListTag;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.File;
 
@@ -34,14 +43,16 @@ public class ${JavaModName}Variables {
 	</#if>
 
 	<#if w.hasVariablesOfScope("GLOBAL_WORLD") || w.hasVariablesOfScope("GLOBAL_MAP")>
-
-		<#if w.hasVariablesOfScope("GLOBAL_WORLD") || w.hasVariablesOfScope("GLOBAL_MAP")>
 		public static void SyncJoin() {
 			ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-				if (entity instanceof Player) {
+				if (entity instanceof ServerPlayer player) {
 					if (!world.isClientSide()) {
-						SavedData mapdata = MapVariables.get(world);
-						SavedData worlddata = WorldVariables.get(world);
+						// Sync both map and world variables to the joining player
+						MapVariables mapdata = MapVariables.get(world);
+						WorldVariables worlddata = WorldVariables.get(world);
+						
+						${JavaModName}PacketHandler.sendToPlayer(player, new SavedDataSyncMessage(0, mapdata));
+						${JavaModName}PacketHandler.sendToPlayer(player, new SavedDataSyncMessage(1, worlddata));
 					}
 				}
 			});
@@ -50,17 +61,20 @@ public class ${JavaModName}Variables {
 		public static void SyncChangeWorld() {
 			ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
 				if (!destination.isClientSide()) {
-					SavedData worlddata = WorldVariables.get(destination);
+					// Sync world variables when player changes dimension
+					WorldVariables worlddata = WorldVariables.get(destination);
+					${JavaModName}PacketHandler.sendToPlayer(player, new SavedDataSyncMessage(1, worlddata));
 				}
 			});
 		}
-		</#if>
 	</#if>
 
 	<#if w.hasVariablesOfScope("GLOBAL_WORLD") || w.hasVariablesOfScope("GLOBAL_MAP")>
 	public static class WorldVariables extends SavedData {
 
-		public static final String DATA_NAME = "${modid}_worldvars";
+		private static final String DATA_NAME = "${modid}_worldvars";
+		public static WorldVariables clientSide = new WorldVariables(); // Changed to public
+		private boolean dirty = false;
 
 		<#list variables as var>
 			<#if var.getScope().name() == "GLOBAL_WORLD">
@@ -92,10 +106,19 @@ public class ${JavaModName}Variables {
 		}
 
 		public void syncData(LevelAccessor world) {
+			if (!dirty) return;
+			
 			this.setDirty();
+			if (world instanceof ServerLevel level) {
+				SavedDataSyncMessage msg = new SavedDataSyncMessage(1, this);
+				${JavaModName}PacketHandler.sendToAll(level, msg);
+			}
+			dirty = false;
 		}
 
-		static WorldVariables clientSide = new WorldVariables();
+		public void markDirty() {
+			dirty = true;
+		}
 
 		public static WorldVariables get(LevelAccessor world) {
 			if (world instanceof ServerLevel level) {
@@ -105,11 +128,50 @@ public class ${JavaModName}Variables {
 			}
 		}
 
+		// Add this method inside both WorldVariables and MapVariables classes
+		private ListTag saveArrayList(ArrayList<?> list) {
+			ListTag listTag = new ListTag();
+			for (Object e : list) {
+				CompoundTag tag = new CompoundTag();
+				if (e instanceof String) 
+					tag.putString("value", (String)e);
+				else if (e instanceof Number) 
+					tag.putDouble("value", ((Number)e).doubleValue());
+				else if (e instanceof Boolean) 
+					tag.putBoolean("value", (Boolean)e);
+				else if (e instanceof ArrayList) 
+					tag.put("value", saveArrayList((ArrayList<?>)e));
+				listTag.add(tag);
+			}
+			return listTag;
+		}
+
+		// Add this inside both WorldVariables and MapVariables classes, next to the saveArrayList method:
+
+		private ArrayList<?> loadArrayList(ListTag listTag) {
+			ArrayList<Object> list = new ArrayList<>();
+			for (Tag e : listTag) {
+				CompoundTag tag = (CompoundTag)e;
+				Tag value = tag.get("value");
+				if (value instanceof StringTag)
+					list.add(tag.getString("value"));
+				else if (value instanceof NumericTag)
+					list.add(tag.getDouble("value"));
+				else if (value instanceof ByteTag)
+					list.add(tag.getBoolean("value"));
+				else if (value instanceof ListTag)
+					list.add(loadArrayList((ListTag)value));
+			}
+			return list;
+		}
+
 	}
 
 	public static class MapVariables extends SavedData {
 
-		public static final String DATA_NAME = "${modid}_mapvars";
+		private static final String DATA_NAME = "${modid}_mapvars";
+		public static MapVariables clientSide = new MapVariables(); // Changed to public
+		private boolean dirty = false;
 
 		<#list variables as var>
 			<#if var.getScope().name() == "GLOBAL_MAP">
@@ -141,19 +203,71 @@ public class ${JavaModName}Variables {
 		}
 
 		public void syncData(LevelAccessor world) {
+			if (!dirty) return;
+			
 			this.setDirty();
+			if (world instanceof ServerLevel level) {
+				// Save to disk
+				level.getServer().getLevel(Level.OVERWORLD).getDataStorage()
+					.save(); // Add this line to force save
+				
+				// Sync to clients
+				SavedDataSyncMessage msg = new SavedDataSyncMessage(0, this);
+				${JavaModName}PacketHandler.sendToAll(level, msg);
+			}
+			dirty = false;
 		}
 
-		static MapVariables clientSide = new MapVariables();
+		public void markDirty() {
+			dirty = true;
+		}
 
 		public static MapVariables get(LevelAccessor world) {
-            if (world instanceof ServerLevelAccessor serverLevelAcc) {
-                return serverLevelAcc.getLevel().getServer().getLevel(Level.OVERWORLD).getDataStorage()
-                        .computeIfAbsent(e -> MapVariables.load(e), MapVariables::new, DATA_NAME);
-            } else {
-                return clientSide;
-            }
-        }
+			if (world instanceof ServerLevel level) {
+				ServerLevel overworld = level.getServer().getLevel(Level.OVERWORLD);
+				return overworld.getDataStorage()
+						.computeIfAbsent(e -> MapVariables.load(e), MapVariables::new, DATA_NAME);
+			} else {
+				return clientSide;
+			}
+		}
+
+		// Add this method inside both WorldVariables and MapVariables classes
+		private ListTag saveArrayList(ArrayList<?> list) {
+			ListTag listTag = new ListTag();
+			for (Object e : list) {
+				CompoundTag tag = new CompoundTag();
+				if (e instanceof String) 
+					tag.putString("value", (String)e);
+				else if (e instanceof Number) 
+					tag.putDouble("value", ((Number)e).doubleValue());
+				else if (e instanceof Boolean) 
+					tag.putBoolean("value", (Boolean)e);
+				else if (e instanceof ArrayList) 
+					tag.put("value", saveArrayList((ArrayList<?>)e));
+				listTag.add(tag);
+			}
+			return listTag;
+		}
+
+		// Add this inside both WorldVariables and MapVariables classes, next to the saveArrayList method:
+
+		private ArrayList<?> loadArrayList(ListTag listTag) {
+			ArrayList<Object> list = new ArrayList<>();
+			for (Tag e : listTag) {
+				CompoundTag tag = (CompoundTag)e;
+				Tag value = tag.get("value");
+				if (value instanceof StringTag)
+					list.add(tag.getString("value"));
+				else if (value instanceof NumericTag)
+					list.add(tag.getDouble("value"));
+				else if (value instanceof ByteTag)
+					list.add(tag.getBoolean("value"));
+				else if (value instanceof ListTag)
+					list.add(loadArrayList((ListTag)value));
+			}
+			return list;
+		}
 
 	}
 
@@ -180,6 +294,12 @@ public class ${JavaModName}Variables {
 		public static void buffer(SavedDataSyncMessage message, FriendlyByteBuf buffer) {
 			buffer.writeInt(message.type);
 			buffer.writeNbt(message.data.save(new CompoundTag()));
+		}
+
+		public FriendlyByteBuf toFriendlyByteBuf() {
+			FriendlyByteBuf buf = PacketByteBufs.create();
+			buffer(this, buf);
+			return buf;
 		}
 	}
 	</#if>
@@ -215,18 +335,23 @@ public class ${JavaModName}Variables {
         }
     }
 
-    private static final Map<UUID, PlayerVariables> playerVariables = new HashMap<>();
+    private static final Map<UUID, PlayerVariables> playerVariables = new ConcurrentHashMap<>(); // Changed from HashMap
     private static PlayerVariables clientPlayerVariables = new PlayerVariables();
 
     public static PlayerVariables getPlayerVariables(Entity entity) {
+        if (entity == null) return null;
+        
         if (entity.level().isClientSide()) {
             return clientPlayerVariables;
         } else if (entity instanceof ServerPlayer player) {
-            return playerVariables.computeIfAbsent(player.getUUID(), k -> {
+            UUID playerId = player.getUUID();
+            if (!playerVariables.containsKey(playerId)) {
                 PlayerVariables vars = new PlayerVariables();
                 loadPlayerVariables(player);
+                playerVariables.put(playerId, vars);
                 return vars;
-            });
+            }
+            return playerVariables.get(playerId);
         }
         return null;
     }
@@ -309,6 +434,8 @@ public class ${JavaModName}Variables {
 
     public static void init() {
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
+            if (oldPlayer == null || newPlayer == null) return;
+            
             PlayerVariables oldVariables = getPlayerVariables(oldPlayer);
             PlayerVariables newVariables = new PlayerVariables();
             if (oldVariables != null) {
@@ -323,13 +450,42 @@ public class ${JavaModName}Variables {
         });
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            loadPlayerVariables(handler.player);
+            if (handler.player != null) {
+                loadPlayerVariables(handler.player);
+            }
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            savePlayerVariables(handler.player);
-            playerVariables.remove(handler.player.getUUID());
+            if (handler.player != null) {
+                savePlayerVariables(handler.player);
+                playerVariables.remove(handler.player.getUUID());
+            }
+        });
+
+        // Change SERVER_STARTING to SERVER_STARTED and add null checks
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            try {
+                ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+                if (overworld != null) {
+                    // Force load map variables
+                    MapVariables mapVars = overworld.getDataStorage()
+                        .computeIfAbsent(e -> MapVariables.load(e), MapVariables::new, MapVariables.DATA_NAME);
+                    mapVars.setDirty();
+                }
+                
+                // Force load world variables for each dimension
+                for (ServerLevel level : server.getAllLevels()) {
+                    if (level != null) {
+                        WorldVariables worldVars = level.getDataStorage()
+                            .computeIfAbsent(e -> WorldVariables.load(e), WorldVariables::new, WorldVariables.DATA_NAME);
+                        worldVars.setDirty();
+                    }
+                }
+            } catch (Exception e) {
+                ${JavaModName}.LOGGER.error("Failed to initialize global variables", e);
+            }
         });
     }
 }
 <#-- @formatter:on -->
+
