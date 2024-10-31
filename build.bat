@@ -31,4 +31,4 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo Process completed successfully.
-pause
+exit
