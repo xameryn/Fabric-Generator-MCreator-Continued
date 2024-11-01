@@ -55,7 +55,6 @@ public class ${JavaModName} implements ModInitializer {
 
 		${JavaModName}Variables.init();
 		${JavaModName}PacketHandler.registerC2SPackets();
-		${JavaModName}PacketHandler.registerS2CPackets();
 
 		<#if w.hasElementsOfType("config")>${JavaModName}Configs.register();</#if>
 

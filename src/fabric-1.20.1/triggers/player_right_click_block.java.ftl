@@ -11,7 +11,7 @@ public ${name}Procedure() {
 			"world": "level",
 			"entity": "player",
 			"direction": "hitResult.getDirection()",
-			"blockstate": "hitResult.getBlockPos()"
+			"blockstate": "level.getBlockState(hitResult.getBlockPos())"
 			}/>
 		</#compress></#assign>
 		execute(${dependenciesCode});

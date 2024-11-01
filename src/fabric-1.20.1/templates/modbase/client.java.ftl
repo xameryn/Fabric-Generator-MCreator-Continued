@@ -32,6 +32,10 @@
 
 package ${package};
 import net.fabricmc.api.Environment;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.ClientModInitializer;
+import ${package}.client.ToastManager;
+import ${package}.network.${JavaModName}ClientPacketHandler;
 
 @Environment(EnvType.CLIENT) public class ClientInit implements ClientModInitializer {
 
@@ -44,6 +48,9 @@ import net.fabricmc.api.Environment;
 		<#if w.hasElementsOfType("gui")>${JavaModName}Screens.load();</#if>
 		<#if w.hasJavaModels()>${JavaModName}Models.load();</#if>
 		<#if w.hasElementsOfBaseType("entity")>${JavaModName}EntityRenderers.load();</#if>
+
+		// Register client-side packets
+		${JavaModName}ClientPacketHandler.registerS2CPackets();
 	}
 }
 

@@ -58,10 +58,8 @@ base_templates:
   name: "@SRCROOT/@BASEPACKAGEPATH/util/BlockTagHelper.java"
 - template: modbase/variableslist.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/network/@JavaModNameVariables.java"
-  condition: hasVariables()
 - template: modbase/packethandler.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/network/@JavaModNamePacketHandler.java"
-  condition: hasVariables()
 - template: elementinits/javamodels.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/init/@JavaModNameModels.java"
   condition: hasJavaModels()
@@ -88,6 +86,10 @@ base_templates:
 - template: mixins/blockentitymixin.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/mixins/BlockEntityMixin.java"
   canLock: true
+- template: modbase/toastmanager.java.ftl
+  name: "@SRCROOT/@BASEPACKAGEPATH/client/ToastManager.java"
+- template: modbase/clientpackethandler.java.ftl
+  name: "@SRCROOT/@BASEPACKAGEPATH/network/@JavaModNameClientPacketHandler.java"
 
 sources_setup_tasks:
   - task: copy_models
