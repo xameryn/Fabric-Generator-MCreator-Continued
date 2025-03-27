@@ -86,8 +86,6 @@ base_templates:
 - template: mixins/blockentitymixin.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/mixins/BlockEntityMixin.java"
   canLock: true
-- template: modbase/toastmanager.java.ftl
-  name: "@SRCROOT/@BASEPACKAGEPATH/client/ToastManager.java"
 - template: modbase/clientpackethandler.java.ftl
   name: "@SRCROOT/@BASEPACKAGEPATH/network/@JavaModNameClientPacketHandler.java"
 

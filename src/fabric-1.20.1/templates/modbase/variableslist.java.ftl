@@ -339,21 +339,25 @@ public class ${JavaModName}Variables {
     private static PlayerVariables clientPlayerVariables = new PlayerVariables();
 
     public static PlayerVariables getPlayerVariables(Entity entity) {
-        if (entity == null) return null;
-        
-        if (entity.level().isClientSide()) {
+        if (entity == null || entity.level().isClientSide()) {
             return clientPlayerVariables;
-        } else if (entity instanceof ServerPlayer player) {
-            UUID playerId = player.getUUID();
-            if (!playerVariables.containsKey(playerId)) {
-                PlayerVariables vars = new PlayerVariables();
-                loadPlayerVariables(player);
-                playerVariables.put(playerId, vars);
-                return vars;
-            }
-            return playerVariables.get(playerId);
         }
-        return null;
+        
+        if (entity instanceof ServerPlayer player) {
+            UUID playerId = player.getUUID();
+            PlayerVariables vars = playerVariables.get(playerId);
+            if (vars == null) {
+                vars = new PlayerVariables();
+                playerVariables.put(playerId, vars);
+                CompoundTag playerData = loadNBTFromFile(player.getServer(), playerId.toString());
+                if (playerData != null) {
+                    vars.readNBT(playerData);
+                }
+            }
+            return vars;
+        }
+        
+        return new PlayerVariables();
     }
 
     public static void savePlayerVariables(Entity entity) {
@@ -369,7 +373,11 @@ public class ${JavaModName}Variables {
         if (entity instanceof ServerPlayer player) {
             CompoundTag playerData = loadNBTFromFile(player.getServer(), player.getUUID().toString());
             if (playerData != null) {
-                PlayerVariables playerVar = playerVariables.computeIfAbsent(player.getUUID(), k -> new PlayerVariables());
+                PlayerVariables playerVar = playerVariables.get(player.getUUID());
+                if (playerVar == null) {
+                    playerVar = new PlayerVariables();
+                    playerVariables.put(player.getUUID(), playerVar);
+                }
                 playerVar.readNBT(playerData);
                 ${JavaModName}PacketHandler.sendToPlayer(player, new PlayerVariablesSyncMessage(playerVar));
             }
@@ -388,14 +396,15 @@ public class ${JavaModName}Variables {
     }
 
     private static CompoundTag loadNBTFromFile(MinecraftServer server, String fileName) {
-        try {
-            File file = new File(server.getWorldPath(LevelResource.PLAYER_DATA_DIR).toFile(), ${JavaModName}.MODID + "/" + fileName + ".dat");
-            return file.exists() ? NbtIo.readCompressed(file) : null;
-        } catch (IOException e) {
-            ${JavaModName}.LOGGER.error("Failed to load player variables for " + fileName, e);
-            return null;
-        }
-    }
+		try {
+			File dataDir = new File(server.getWorldPath(LevelResource.PLAYER_DATA_DIR).toFile(), ${JavaModName}.MODID);
+			File file = new File(dataDir, fileName + ".dat");
+			return file.exists() ? NbtIo.readCompressed(file) : null;
+		} catch (IOException e) {
+			${JavaModName}.LOGGER.error("Failed to load player variables for " + fileName, e);
+			return null;
+		}
+	}
 
     public static class PlayerVariablesSyncMessage {
         public PlayerVariables data;

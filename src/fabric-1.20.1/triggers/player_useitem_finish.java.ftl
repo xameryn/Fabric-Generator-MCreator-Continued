@@ -1,4 +1,5 @@
 <#include "procedures.java.ftl">
+
 public ${name}Procedure() {
     UseItemCallback.EVENT.register((player, world, hand) -> {
         ItemStack itemstack = player.getItemInHand(hand);
@@ -14,6 +15,7 @@ public ${name}Procedure() {
         </#compress></#assign>
         execute(${dependenciesCode});
         
-        return TypedActionResult.pass(itemstack);
+        <#--  return TypedActionResult.pass(itemstack);  -->
+        return new InteractionResultHolder<>(InteractionResult.PASS, itemstack);
     });
 }

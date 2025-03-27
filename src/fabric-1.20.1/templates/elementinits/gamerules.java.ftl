@@ -35,15 +35,13 @@ public class ${JavaModName}GameRules {
 	</#list>
 
 	public static void load() {
-		<#list gamerules as gamerule>
-			<#if gamerule.type == "Number">
-				${gamerule.getModElement().getRegistryNameUpper()} = GameRuleRegistry.register("${gamerule.getModElement().getRegistryName()}", GameRules.Category.${gamerule.category}, GameRuleFactory.createIntRule(${gamerule.defaultValueNumber}));
-			<#else>
-				${gamerule.getModElement().getRegistryNameUpper()} = GameRuleRegistry.register("${gamerule.getModElement().getRegistryName()}", GameRules.Category.${gamerule.category}, GameRuleFactory.createBooleanRule(${gamerule.defaultValueLogic}));
-			</#if>
-		</#list>
-	}
-
-
+        <#list gamerules as gamerule>
+            <#if gamerule.type == "Number">
+                ${gamerule.getModElement().getRegistryNameUpper()} = GameRuleRegistry.register("<#list gamerule.getModElement().getRegistryName()?split("_") as part><#if part_index == 0>${part?lower_case}<#else>${part?capitalize}</#if></#list>", GameRules.Category.${gamerule.category}, GameRuleFactory.createIntRule(${gamerule.defaultValueNumber}));
+            <#else>
+                ${gamerule.getModElement().getRegistryNameUpper()} = GameRuleRegistry.register("<#list gamerule.getModElement().getRegistryName()?split("_") as part><#if part_index == 0>${part?lower_case}<#else>${part?capitalize}</#if></#list>", GameRules.Category.${gamerule.category}, GameRuleFactory.createBooleanRule(${gamerule.defaultValueLogic}));
+            </#if>
+        </#list>
+    }
 }
 <#-- @formatter:on -->

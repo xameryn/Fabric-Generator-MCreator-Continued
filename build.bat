@@ -22,7 +22,7 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo Step 3: Attempting to run MCreator...
-"C:\Program Files\Pylo\MCreator\mcreator.exe"
+"C:\Program Files\Pylo\MCreator - 2023.4\mcreator.exe"
 if %ERRORLEVEL% neq 0 (
     echo Error running MCreator. Please check your MCreator installation path.
     pause

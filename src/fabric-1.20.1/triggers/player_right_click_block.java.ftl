@@ -3,6 +3,8 @@ public ${name}Procedure() {
 	UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
 		if (hand != player.getUsedItemHand())
 			return InteractionResult.PASS;
+		
+		ItemStack itemstack = player.getItemInHand(hand);
 		<#assign dependenciesCode><#compress>
 			<@procedureDependenciesCode dependencies, {
 			"x": "hitResult.getBlockPos().getX()",

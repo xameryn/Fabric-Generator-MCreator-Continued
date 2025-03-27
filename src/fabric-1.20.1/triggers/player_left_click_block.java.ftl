@@ -3,8 +3,11 @@ private static boolean cancelEvent = false;
 
 public ${name}Procedure() {
 	AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) -> {
-		if (hand != player.getUsedItemHand())
-			return InteractionResult.PASS;
+		<#--  if (hand != player.getUsedItemHand())
+			return InteractionResult.PASS;  -->
+
+		cancelEvent = false;
+
 		<#assign dependenciesCode><#compress>
 			<@procedureDependenciesCode dependencies, {
 			"x": "pos.getX()",

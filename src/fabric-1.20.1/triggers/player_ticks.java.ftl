@@ -13,6 +13,9 @@ public ${name}Procedure() {
                 "entity": "player"
             }/>
             </#compress></#assign>
+            if (player == null || !player.isAlive() || player.connection == null || !player.connection.isAcceptingMessages()) {
+                continue;
+            }
             execute(${dependenciesCode});
         }
     });

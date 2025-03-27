@@ -34,7 +34,6 @@ package ${package};
 import net.fabricmc.api.Environment;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ClientModInitializer;
-import ${package}.client.ToastManager;
 import ${package}.network.${JavaModName}ClientPacketHandler;
 
 @Environment(EnvType.CLIENT) public class ClientInit implements ClientModInitializer {
